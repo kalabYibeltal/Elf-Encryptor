@@ -16,13 +16,6 @@ int main( )
     elfio reader;
     elfio writer;
 
- 
-
-   
-
-
-
-
     // Load ELF data    
     if ( !reader.load( "indirect-test.elf" ) ) {
 
@@ -52,7 +45,7 @@ int main( )
     //     new_symtab.add_symbol(symbol.name, symbol.value, symbol.size, symbol.bind, symbol.type, symbol.other, symbol.shndx);
     // }
 
-   std::cout << "ELF file class : ";
+    std::cout << "ELF file class : ";
     if ( reader.get_class() == ELFCLASS32 )
     std::cout << "ELF32" << std::endl;
     else
@@ -130,7 +123,7 @@ int main( )
     std::vector<std::array<uint64_t, 2>> jumpt_adds;
     std::vector<uint32_t> globcp_adds;
 
-    std::vector<uint32_t> enc_instructions_vec;
+    
 
     std::map<std::string, std::vector<std::vector<uint32_t>>> addi_lui;
 
@@ -139,58 +132,11 @@ int main( )
         // section* text_sec = reader.sections[".text"];
         section* psec = reader.sections[i];
         // I want to print out each instruction in the .text section
-        uint32_t k_code_32 = 0x54640911;
-        uint16_t k_code_16 = 0x5464;
-        if (psec->get_name() == ".text") {
-                const char* p = psec->get_data();
-                uint64_t base_address = psec->get_address();
-                Elf_Xword size = psec->get_size();
-                for (int i = 0; i < size;) {
-                    uint16_t first_half = *(uint16_t*)(p + i);
-                    if ((first_half & 0x3) == 0x3) {
-                        // This is a 32-bit instruction
-                        if (i + 2 < size) {
-                            uint32_t instruction = first_half | (*(uint16_t*)(p + i + 2) << 16);
-
-                            
-                            // std::cout << "32-bit Instruction :" ; 
-                            // std::cout << std::hex << std::setw(8) << std::setfill('0') << instruction << std::endl;
-                            // std::cout << "address :" ; 
-                            // std::cout << std::hex << std::setw(8) << std::setfill('0') << base_address + i << std::endl;
-                            
-                            // each enc_instruction will be written in another elf file 
-                            uint32_t enc_instruction = instruction ^ k_code_32 ^ (base_address + i ); 
-
-                            enc_instructions_vec.push_back(enc_instruction); // store the encrypted instructions in a vector
-                            // std::cout << "encrypted instruction :" ; 
-                            // std::cout << std::hex << std::setw(8) << std::setfill('0') << enc_instruction << std::endl;
-
-                            i += 4;
-                        }
-                    } else {
-                        // std::cout << "16-bit Instruction: ";
-                        // std::cout << std::hex << std::setw(4) << std::setfill('0') << first_half << std::endl;
-                        // std::cout << "address :" ; 
-                        // std::cout << std::hex << std::setw(8) << std::setfill('0') << base_address + i << std::endl;
-
-                        // each enc_instruction will be written in another elf file 
-                        uint32_t enc_instruction = first_half ^ k_code_16   ^ (base_address + i);
-                        
-                        enc_instructions_vec.push_back(enc_instruction); // store the encrypted instructions in a vector
-                        // std::cout << "encrypted instruction :" ; 
-                        // std::cout << std::hex << std::setw(8) << std::setfill('0') << enc_instruction << std::endl;
-
-                        i += 2;
-                    }
-                    // std::cout <<"\n--------------------------------------------" <<std::endl;
-
-                }
-            }
     
         // Get the symbol table sectionf
         
 
-         // Check if this is a symbol table section
+        // Check if this is a symbol table section
         if (psec->get_type() == SHT_SYMTAB) {
             symbol_section_accessor symbols(reader, psec);
             // int jumpt_adds_index = 0;
@@ -231,6 +177,7 @@ int main( )
                         globcp_adds.push_back(value);
 
                     }
+                   
                     else if(name.find("$luihi") != std::string::npos) {
                         std::string func_name = name.substr(name.find_last_of('$') + 1);
                         if (addi_lui.find(func_name) != addi_lui.end()) {
@@ -262,7 +209,7 @@ int main( )
                 }
             }
 
-            // print out the addi_lui vector for debugging
+       
            
         }
             
@@ -271,18 +218,19 @@ int main( )
 
     // for (int i = 0; i < sec_num; ++i) {
         
-        uint16_t k_code_ptr_16 = 0x5810;
-        uint32_t k_code_ptr_32 = 0x58105464;
+    uint16_t k_code_ptr_16 = 0x5810;
+    uint32_t k_code_ptr_32 = 0x58105464;
 
-        section* text_sec =  reader.sections[".text"];
+    section* text_sec =  reader.sections[".text"];
+    std::map<uint32_t, uint32_t> addi_lui_enc;
 
-        uint64_t base_address = text_sec->get_address();
-        const char* p = text_sec->get_data();
+    uint64_t base_address = text_sec->get_address();
+    const char* p = text_sec->get_data();
+    Elf_Xword size = text_sec->get_size();
 
-        for (const auto& pair : addi_lui) {
-            std::cout << "Key: " << pair.first << "\n";
+    for (const auto& pair : addi_lui) {
 
-            uint32_t enc_func_addr = pair.second[2][0] ^ k_code_ptr_32;
+            uint32_t enc_func_addr  = pair.second[2][0] ^ k_code_ptr_32;
 
             for (const auto& val : pair.second[0]) {
                 uint64_t offset = val - base_address;
@@ -300,7 +248,8 @@ int main( )
                 // Combine the two masked values to form enc_instruction
                 uint32_t enc_instruction = enc_func_addr_masked | instruction_masked;
 
-                std::cout << "address encrypted addilo instruction " << enc_instruction << "\n";
+                addi_lui_enc[val] = enc_instruction;
+                // std::cout << "address encrypted addilo instruction " << enc_instruction << "\n";
 
             }
 
@@ -314,102 +263,180 @@ int main( )
 
                 uint32_t enc_instruction = enc_func_addr_masked | instruction_masked;
 
-                std::cout << "address encrypted luihi instruction " << enc_instruction << "\n";
+                addi_lui_enc[val] = enc_instruction;
+                // std::cout << "address encrypted luihi instruction " << enc_instruction << "\n";
 
             }
         
             
         }
 
-
-        std::vector<uint32_t> enc_rodata_vec;
-        section* psec =  reader.sections[".rodata"];
-        if (psec->get_name() == ".rodata") {
+       
+  // encrypt every instruction
     
-                int jumpt_adds_index = 0;
+    // std::vector<uint32_t> enc_instructions_vec;
+    std::vector<std::pair<uint32_t, bool>> enc_instructions_vec;
+    // true if instruction is compressed instruction
 
-                const char* p = psec->get_data();
-                uint64_t base_address = psec->get_address();
-                Elf_Xword size = psec->get_size();
-
-
-                // jump table encryption
-                for (int i = 0; i < size; ) {
-                    // std::cout << base_address + i  << std::endl;
-                    if (jumpt_adds[jumpt_adds_index][0] <= (base_address + i)  && (base_address + i) < jumpt_adds[jumpt_adds_index][0] + ( jumpt_adds[jumpt_adds_index][1] * 4 ) ) {
-
-                        uint16_t code_ptr = *(uint16_t*)(p + i);
-                        // std::cout << base_address + i << "  "<<  code_ptr << std::endl ;
-
-                        uint16_t enc_code_ptr = k_code_ptr_16 ^ code_ptr ;
-                        // std::cout << "encrypted code ptr :" ; 
-                        // std::cout << std::hex << std::setw(4) << std::setfill('0') << enc_code_ptr << std::endl ;
-                        // std::cout << p[i];
-                        enc_rodata_vec.push_back(enc_code_ptr);
-                        i += 2; 
-                    }
-                    else {
-                        enc_rodata_vec.push_back(*(uint16_t*)(p + i));
-                    }
-
-                    if (jumpt_adds[jumpt_adds_index][0] + ( jumpt_adds[jumpt_adds_index][1] * 4 )  == (base_address + i) ) {
-                        jumpt_adds_index += 1;
-                        if (jumpt_adds_index == jumpt_adds.size()){
-                            break;
-                        }
-                        // std::cout << base_address + i << "  " << std::endl ;
-                        // std::cout << "-----------------------------------------" << std::endl ;
-                        if ((base_address + i) ==  jumpt_adds[jumpt_adds_index][0]){
-                                i += -2;
-                        }
-                    }
+    uint32_t k_code_32 = 0x54640911;
+    uint16_t k_code_16 = 0x5464;
+    for (int i = 0; i < size;) {
+        uint16_t first_half = *(uint16_t*)(p + i);
+        if ((first_half & 0x3) == 0x3) {
+            // This is a 32-bit instruction
+            if (i + 2 < size) {
 
 
-                    i += 2;
+                uint32_t instruction = first_half | (*(uint16_t*)(p + i + 2) << 16);
+
+                // std::cout << "32-bit Instruction :" ; 
+                // std::cout << std::hex << std::setw(8) << std::setfill('0') << instruction << std::endl;
+                // std::cout << "address :" ; 
+                // std::cout << std::hex << std::setw(8) << std::setfill('0') << base_address + i << std::endl;
+                
+                // each enc_instruction will be written in another elf file 
+
+                //include the addi and lui encryptions
+                if (addi_lui_enc.find(base_address + i) != addi_lui_enc.end()) {
+                    std::cout << "address encrypted addi instruction " << base_address + i << " address " << addi_lui_enc[base_address + i] << "\n";
+                    instruction = addi_lui_enc[base_address + i];
+
+                } 
+
+                // SINCE NO CODE Encryption due to laurens students deed
+                // uint32_t enc_instruction = instruction ^ k_code_32 ^ (base_address + i ); 
+
+                uint32_t enc_instruction = instruction; 
+                // if (instruction == 0x00000093) {
+                //     std::cout<< (base_address + i )<<"+++++++++++++++++++++++++"<<enc_instruction << std::endl;
+                // }
+
+                enc_instructions_vec.push_back(std::make_pair(enc_instruction, false)); 
+                // false since the instruction is not compressed
+                // store the encrypted instructions in a vector
+                // std::cout << "encrypted instruction :" ; 
+                // std::cout << std::hex << std::setw(8) << std::setfill('0') << enc_instruction << std::endl;
+
+                i += 4;
+            }
+        } else {
+            // std::cout << "16-bit Instruction: ";
+            // std::cout << std::hex << std::setw(4) << std::setfill('0') << first_half << std::endl;
+            // std::cout << "address :" ; 
+            // std::cout << std::hex << std::setw(8) << std::setfill('0') << base_address + i << std::endl;
+
+            // each enc_instruction will be written in another elf file 
+            
+        
+            // SINCE NO CODE Encryption due to laurens students deed
+            // uint32_t enc_instruction = first_half ^ k_code_16   ^ ((base_address + i) & 0xFFFF);
+          
+           
+             uint32_t enc_instruction = first_half;
+        
+
+            enc_instructions_vec.push_back(std::make_pair(enc_instruction, true));
+            // std::cout << "encrypted instruction :" ; 
+            // std::cout << std::hex << std::setw(8) << std::setfill('0') << enc_instruction << std::endl;
+
+            i += 2;
+        }
+        // std::cout <<"\n--------------------------------------------" <<std::endl;
+
+    }
+        
+
+
+    // encrypt rodata and data sections        
+    std::vector<uint32_t> enc_rodata_vec;
+    section* psec =  reader.sections[".rodata"];
+    if (psec->get_name() == ".rodata") {
+
+        int jumpt_adds_index = 0;
+
+        const char* p = psec->get_data();
+        uint64_t base_address = psec->get_address();
+        Elf_Xword size = psec->get_size();
+
+
+        // jump table encryption
+        for (int i = 0; i < size; ) {
+            // std::cout << base_address + i  << std::endl;
+            if (jumpt_adds[jumpt_adds_index][0] <= (base_address + i)  && (base_address + i) < jumpt_adds[jumpt_adds_index][0] + ( jumpt_adds[jumpt_adds_index][1] * 4 ) ) {
+
+                uint16_t code_ptr = *(uint16_t*)(p + i);
+                // std::cout << base_address + i << "  "<<  code_ptr << std::endl ;
+
+                uint16_t enc_code_ptr = k_code_ptr_16 ^ code_ptr ;
+                // std::cout << "encrypted code ptr :" ; 
+                // std::cout << std::hex << std::setw(4) << std::setfill('0') << enc_code_ptr << std::endl ;
+                // std::cout << p[i];
+                enc_rodata_vec.push_back(enc_code_ptr);
+                i += 2; 
+            }
+            else {
+                enc_rodata_vec.push_back(*(uint16_t*)(p + i));
+            }
+
+            if (jumpt_adds[jumpt_adds_index][0] + ( jumpt_adds[jumpt_adds_index][1] * 4 )  == (base_address + i) ) {
+                jumpt_adds_index += 1;
+                if (jumpt_adds_index == jumpt_adds.size()){
+                    break;
+                }
+                // std::cout << base_address + i << "  " << std::endl ;
+                // std::cout << "-----------------------------------------" << std::endl ;
+                if ((base_address + i) ==  jumpt_adds[jumpt_adds_index][0]){
+                        i += -2;
                 }
             }
 
-        std::vector<uint32_t> enc_data_vec;
-        section* data_sec =  reader.sections[".data"];
-        if (data_sec->get_name() == ".data") {
+
+            i += 2;
+            }
+    }
+
+    std::vector<uint32_t> enc_data_vec;
+    section* data_sec =  reader.sections[".data"];
+    if (data_sec->get_name() == ".data") {
 
 
-                int globcp_adds_index = 0;
+        int globcp_adds_index = 0;
 
-                const char* p = data_sec->get_data();
-                uint64_t base_address = data_sec->get_address();
-                Elf_Xword size = data_sec->get_size();
+        const char* p = data_sec->get_data();
+        uint64_t base_address = data_sec->get_address();
+        Elf_Xword size = data_sec->get_size();
 
+        
+        for( int i = 0; i < size; ) {
+
+            //globcp encryption
+            if (globcp_adds[globcp_adds_index] == (base_address + i) ) {
+                uint32_t globcp = *(uint32_t*)(p + i);
+
+                uint32_t enc_globcp = globcp ^ k_code_ptr_32;
+                // std::cout << "encrypted globcp :"  << enc_globcp; 
                 
-                for( int i = 0; i < size; ) {
-
-                    //globcp encryption
-                    if (globcp_adds[globcp_adds_index] == (base_address + i) ) {
-                        uint32_t globcp = *(uint32_t*)(p + i);
-
-                        uint32_t enc_globcp = globcp ^ k_code_ptr_32;
-                        // std::cout << "encrypted globcp :"  << enc_globcp; 
-                        
-                        // std::cout << std::hex << std::setw(8) << std::setfill('0') << enc_globcp << std::endl ;
-                        // std::cout << p[i];
-                        enc_data_vec.push_back(enc_globcp); 
-                        i += 4; 
-                        globcp_adds_index += 1;
-                        if (globcp_adds_index == globcp_adds.size()){
-                            break;
-                        }
-
-                    }
-                    else {
-                        enc_data_vec.push_back(*(uint32_t*)(p + i));
-                    }
-                
+                // std::cout << std::hex << std::setw(8) << std::setfill('0') << enc_globcp << std::endl ;
+                // std::cout << p[i];
+                enc_data_vec.push_back(enc_globcp); 
+                i += 4; 
+                globcp_adds_index += 1;
+                if (globcp_adds_index == globcp_adds.size()){
+                    break;
                 }
+
+            }
+            else {
+                enc_data_vec.push_back(*(uint32_t*)(p + i));
+            }
+        
+        }
 
 
         }
     
-   
+
+    // copy segments and sections to a new elf file 
     std::vector<section*> new_sections;
     for (int i = 0; i < sec_num; ++i) {
         // section* text_sec = reader.sections[".text"];
@@ -426,19 +453,26 @@ int main( )
         new_sections.push_back(new_sec);
 
         if ( sec->get_name() == ".text" ) {
-            // Modify the .text section
-            char* enc_instructions = reinterpret_cast<char*>(enc_instructions_vec.data());
-            Elf_Xword size = enc_instructions_vec.size() * sizeof(uint32_t);
-            new_sec->set_data(enc_instructions, size);
+  
+            for (const auto& instr_data : enc_instructions_vec) {
+                const char* data = reinterpret_cast<const char*>(&instr_data.first);
+                if (instr_data.second) {
+                    new_sec->append_data(data, 2);
+                } else {
+                    new_sec->append_data(data, 4);
+                }
+            }
+
+
         }
-        // else if (sec->get_name() == ".rodata") {
-        //     char* enc_rodata = reinterpret_cast<char*>(enc_rodata_vec.data());
-        //     Elf_Xword size = enc_rodata_vec.size() * sizeof(uint32_t);
-        //     new_sec->set_data(enc_rodata, size);
-        // }
+        else if (sec->get_name() == ".rodata") { 
+            char* enc_rodata = reinterpret_cast<char*>(enc_rodata_vec.data());
+            Elf_Xword size = enc_rodata_vec.size() * 2;
+            new_sec->set_data(enc_rodata, size);
+        }
         else if (sec->get_name() == ".data") {
             char* enc_data = reinterpret_cast<char*>(enc_data_vec.data());
-            Elf_Xword size = enc_data_vec.size() * sizeof(uint32_t);
+            Elf_Xword size = enc_data_vec.size() * 4;
             new_sec->set_data(enc_data, size);
         }
         else {
@@ -469,7 +503,6 @@ int main( )
             }
         }
     }
-
 
     writer.save( "encrypted.elf" );
 

@@ -71,7 +71,7 @@ SYMBOL TABLE:
 00000000 l    df *ABS*	00000000 libgcc2.c
 001051b2 g     F .text	0000002a .hidden __ashldi3
 00103078 g     F .text	000000f4 .hidden __getf2
-00102178 g     F .text	0000006a .hidden __eqdf2
+00102178 g     F .text	0000006a .hidden __eqdf2f
 001018be g     F .text	00000024 .hidden _isctype
 00102efc g     F .text	0000017c .hidden __floatdidf
 001021e2 g     F .text	000000a6 .hidden __gtdf2
