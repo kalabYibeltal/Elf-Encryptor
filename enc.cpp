@@ -4,14 +4,12 @@
 #include <random>
 #include <iomanip> 
 #include <map>
+// #include <algorithm>
 
 using namespace ELFIO;
 
-
-
 int main( )
 {
-    
     // Create elfio reader
     elfio reader;
     elfio writer;
@@ -215,40 +213,71 @@ int main( )
             
     }
     
-
+    
     // for (int i = 0; i < sec_num; ++i) {
         
-    uint16_t k_code_ptr_16 = 0x5810;
-    uint32_t k_code_ptr_32 = 0x58105464;
+    uint16_t k_code_ptr_16 = 0x5464;
+    uint32_t k_code_ptr_32 = 0x52068860;
 
     section* text_sec =  reader.sections[".text"];
-    std::map<uint32_t, uint32_t> addi_lui_enc;
+    std::map<uint32_t, std::vector<uint32_t>> addi_lui_enc;
 
     uint64_t base_address = text_sec->get_address();
     const char* p = text_sec->get_data();
     Elf_Xword size = text_sec->get_size();
 
     for (const auto& pair : addi_lui) {
-
+            bool addr_overflow = false;
             uint32_t enc_func_addr  = pair.second[2][0] ^ k_code_ptr_32;
-
             for (const auto& val : pair.second[0]) {
                 uint64_t offset = val - base_address;
                 uint32_t instruction = *(uint32_t*)(p + offset);
-                
+
                 // Mask t he last 3 digits of enc_func_addr (12 bits in hexadecimal)
                 uint32_t enc_func_addr_masked = enc_func_addr & 0xFFF;
+                // Mask the last 5 digits of instruction (20 bits in hexadecimal)
+                uint32_t instruction_masked = instruction & 0xFFFFF;
+
+                // addi instruction could be negative (>=0x100)  in that case we need to add 
+                // enc_func_addr_masked in 2 or 3 steps
+
+                if (enc_func_addr_masked >= 0x800) {
+                    addr_overflow = true;
+                }
+                // if (enc_func_addr_masked >= 0x800) {
+                //     uint32_t enc_func_addr_masked_remainder = enc_func_addr_masked - 0x7FF;
+                //     enc_func_addr_masked = 0x7FF;
+                //     if (enc_func_addr_masked_remainder >= 0x800) {
+                //         enc_func_addr_masked_remainder -= 0x1;
+                //         // Shift it left to make room for the last 5 digits of instruction
+                //         //the remainder can be mathimatcally proven to be 1
+                //         uint32_t temp = 0x1; 
+                //         uint32_t enc_instruction = (temp <<= 20) | instruction_masked;
+                //         // addi_lui_enc[val] = enc_instruction;
+                //         addi_lui_enc[val].push_back(enc_instruction);
+                //     }
+                //     // Shift it left to make room for the last 5 digits of instruction
+                //     enc_func_addr_masked_remainder <<= 20;
+
+                //     // Combine the two masked values to form enc_instruction
+                //     uint32_t enc_instruction = enc_func_addr_masked_remainder | instruction_masked;
+                
+                //     // addi instruction 
+                //     // addi_lui_enc[val] = enc_instruction;
+                //     addi_lui_enc[val].push_back(enc_instruction);
+
+                // }
+
 
                 // Shift it left to make room for the last 5 digits of instruction
                 enc_func_addr_masked <<= 20;
 
-                // Mask the last 5 digits of instruction (20 bits in hexadecimal)
-                uint32_t instruction_masked = instruction & 0xFFFFF;
-
                 // Combine the two masked values to form enc_instruction
                 uint32_t enc_instruction = enc_func_addr_masked | instruction_masked;
-
-                addi_lui_enc[val] = enc_instruction;
+               
+                // addi instruction 
+                // addi_lui_enc[val] = enc_instruction;
+                addi_lui_enc[val].push_back(enc_instruction);
                 // std::cout << "address encrypted addilo instruction " << enc_instruction << "\n";
 
             }
@@ -258,12 +287,17 @@ int main( )
                 uint32_t instruction = *(uint32_t*)(p + offset);
                 
                 uint32_t enc_func_addr_masked = enc_func_addr & 0xFFFFF000;
+                if (addr_overflow) {
+                    enc_func_addr_masked += 0x1000 ; // when addi immediate is negative 
+                    std::cout << enc_func_addr_masked;
+                }
 
                 uint32_t instruction_masked = instruction & 0xFFF;
 
                 uint32_t enc_instruction = enc_func_addr_masked | instruction_masked;
 
-                addi_lui_enc[val] = enc_instruction;
+                // addi_lui_enc[val] = enc_instruction;
+                addi_lui_enc[val].push_back(enc_instruction);
                 // std::cout << "address encrypted luihi instruction " << enc_instruction << "\n";
 
             }
@@ -298,24 +332,30 @@ int main( )
 
                 //include the addi and lui encryptions
                 if (addi_lui_enc.find(base_address + i) != addi_lui_enc.end()) {
-                    std::cout << "address encrypted addi instruction " << base_address + i << " address " << addi_lui_enc[base_address + i] << "\n";
-                    instruction = addi_lui_enc[base_address + i];
+                    // instruction = addi_lui_enc[base_address + i];
+                    for (const auto& enc_instr : addi_lui_enc[base_address + i]) {
+                        enc_instructions_vec.push_back(std::make_pair(enc_instr, false));
+                    }
 
                 } 
 
-                // SINCE NO CODE Encryption due to laurens students deed
-                // uint32_t enc_instruction = instruction ^ k_code_32 ^ (base_address + i ); 
+                else {
+                    
+                    // SINCE NO CODE Encryption due to laurens students deed
+                    // uint32_t enc_instruction = instruction ^ k_code_32 ^ (base_address + i ); 
 
-                uint32_t enc_instruction = instruction; 
-                // if (instruction == 0x00000093) {
-                //     std::cout<< (base_address + i )<<"+++++++++++++++++++++++++"<<enc_instruction << std::endl;
-                // }
+                    uint32_t enc_instruction = instruction; 
+                    // if (instruction == 0x00000093) {
+                    //     std::cout<< (base_address + i )<<"+++++++++++++++++++++++++"<<enc_instruction << std::endl;
+                    // }
 
-                enc_instructions_vec.push_back(std::make_pair(enc_instruction, false)); 
-                // false since the instruction is not compressed
-                // store the encrypted instructions in a vector
-                // std::cout << "encrypted instruction :" ; 
-                // std::cout << std::hex << std::setw(8) << std::setfill('0') << enc_instruction << std::endl;
+                    enc_instructions_vec.push_back(std::make_pair(enc_instruction, false)); 
+                    // false since the instruction is not compressed
+                    // store the encrypted instructions in a vector
+                    // std::cout << "encrypted instruction :" ; 
+                    // std::cout << std::hex << std::setw(8) << std::setfill('0') << enc_instruction << std::endl;
+
+                }
 
                 i += 4;
             }
@@ -349,8 +389,12 @@ int main( )
 
     // encrypt rodata and data sections        
     std::vector<uint32_t> enc_rodata_vec;
+
     section* psec =  reader.sections[".rodata"];
     if (psec->get_name() == ".rodata") {
+
+        // uint8_t x = *(uint8_t*)(p + 4);
+        // std::cout << "code_ptr :" << x << std::endl;
 
         int jumpt_adds_index = 0;
 
@@ -358,43 +402,42 @@ int main( )
         uint64_t base_address = psec->get_address();
         Elf_Xword size = psec->get_size();
 
-
-        // jump table encryption
         for (int i = 0; i < size; ) {
-            // std::cout << base_address + i  << std::endl;
-            if (jumpt_adds[jumpt_adds_index][0] <= (base_address + i)  && (base_address + i) < jumpt_adds[jumpt_adds_index][0] + ( jumpt_adds[jumpt_adds_index][1] * 4 ) ) {
+            
+            if (jumpt_adds.size() > 0 && jumpt_adds[jumpt_adds_index][0] <= (base_address + i)  && (base_address + i) < jumpt_adds[jumpt_adds_index][0] + ( jumpt_adds[jumpt_adds_index][1] * 4 ) ) {
 
-                uint16_t code_ptr = *(uint16_t*)(p + i);
-                // std::cout << base_address + i << "  "<<  code_ptr << std::endl ;
-
-                uint16_t enc_code_ptr = k_code_ptr_16 ^ code_ptr ;
-                // std::cout << "encrypted code ptr :" ; 
-                // std::cout << std::hex << std::setw(4) << std::setfill('0') << enc_code_ptr << std::endl ;
-                // std::cout << p[i];
+                uint32_t code_ptr = *(uint32_t*)(p + i);
+                uint32_t enc_code_ptr = code_ptr ^ k_code_ptr_32;
+     
                 enc_rodata_vec.push_back(enc_code_ptr);
-                i += 2; 
+                i += 4; 
+
+                // //globcp + 4
+                // code_ptr = *(uint32_t*)(p + i);
+                // enc_code_ptr = code_ptr ^ k_code_ptr_32;
+     
+                // enc_rodata_vec.push_back(enc_code_ptr);
+                // i += 4; 
             }
             else {
-                enc_rodata_vec.push_back(*(uint16_t*)(p + i));
+                uint32_t code_ptr = *(uint32_t*)(p + i);
+                enc_rodata_vec.push_back(code_ptr);
+                i += 4;
+
             }
 
-            if (jumpt_adds[jumpt_adds_index][0] + ( jumpt_adds[jumpt_adds_index][1] * 4 )  == (base_address + i) ) {
+            if (jumpt_adds.size() > 0 &&  jumpt_adds[jumpt_adds_index][0] + ( jumpt_adds[jumpt_adds_index][1] * 4 )  == (base_address + i) ) {
                 jumpt_adds_index += 1;
-                if (jumpt_adds_index == jumpt_adds.size()){
-                    break;
-                }
-                // std::cout << base_address + i << "  " << std::endl ;
-                // std::cout << "-----------------------------------------" << std::endl ;
-                if ((base_address + i) ==  jumpt_adds[jumpt_adds_index][0]){
-                        i += -2;
-                }
+             
             }
 
 
-            i += 2;
+           
             }
     }
 
+    
+ 
     std::vector<uint32_t> enc_data_vec;
     section* data_sec =  reader.sections[".data"];
     if (data_sec->get_name() == ".data") {
@@ -406,29 +449,26 @@ int main( )
         uint64_t base_address = data_sec->get_address();
         Elf_Xword size = data_sec->get_size();
 
-        
+        std::sort(globcp_adds.begin(), globcp_adds.end());
+
         for( int i = 0; i < size; ) {
 
             //globcp encryption
-            if (globcp_adds[globcp_adds_index] == (base_address + i) ) {
+            
+            if (globcp_adds.size() > 0 && globcp_adds[globcp_adds_index] == (base_address + i) ) {
                 uint32_t globcp = *(uint32_t*)(p + i);
 
                 uint32_t enc_globcp = globcp ^ k_code_ptr_32;
-                // std::cout << "encrypted globcp :"  << enc_globcp; 
+                // uint32_t enc_globcp = 0x52168972;
                 
                 // std::cout << std::hex << std::setw(8) << std::setfill('0') << enc_globcp << std::endl ;
                 // std::cout << p[i];
                 enc_data_vec.push_back(enc_globcp); 
-                i += 4; 
-                globcp_adds_index += 1;
-                if (globcp_adds_index == globcp_adds.size()){
-                    break;
-                }
-
             }
             else {
                 enc_data_vec.push_back(*(uint32_t*)(p + i));
             }
+            i += 4;
         
         }
 
@@ -466,13 +506,19 @@ int main( )
 
         }
         else if (sec->get_name() == ".rodata") { 
+            // for (const auto& ro_data : enc_rodata_vec) {
+            //     const char* data = reinterpret_cast<const char*>(&ro_data);
+            //     new_sec->append_data(data, 4);
+            // }
+
+
             char* enc_rodata = reinterpret_cast<char*>(enc_rodata_vec.data());
-            Elf_Xword size = enc_rodata_vec.size() * 2;
+            Elf_Xword size = enc_rodata_vec.size() * sizeof(uint32_t);
             new_sec->set_data(enc_rodata, size);
         }
         else if (sec->get_name() == ".data") {
             char* enc_data = reinterpret_cast<char*>(enc_data_vec.data());
-            Elf_Xword size = enc_data_vec.size() * 4;
+            Elf_Xword size = enc_data_vec.size() * sizeof(uint32_t);
             new_sec->set_data(enc_data, size);
         }
         else {
