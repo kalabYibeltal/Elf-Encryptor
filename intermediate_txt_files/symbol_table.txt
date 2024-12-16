@@ -1,0 +1,165 @@
+
+./qsort-demo.elf:     file format elf32-littleriscv
+
+SYMBOL TABLE:
+00100000 l    d  .vectors	00000000 .vectors
+00100084 l    d  .text	00000000 .text
+001061b0 l    d  .rodata	00000000 .rodata
+00106840 l    d  .data	00000000 .data
+00106a48 l    d  .bss	00000000 .bss
+00130000 l    d  .stack	00000000 .stack
+00000000 l    d  .riscv.attributes	00000000 .riscv.attributes
+00000000 l    d  .comment	00000000 .comment
+00000000 l    d  .debug_line	00000000 .debug_line
+00000000 l    d  .debug_info	00000000 .debug_info
+00000000 l    d  .debug_abbrev	00000000 .debug_abbrev
+00000000 l    d  .debug_aranges	00000000 .debug_aranges
+00000000 l    d  .debug_str	00000000 .debug_str
+00000000 l    d  .debug_ranges	00000000 .debug_ranges
+00000000 l    d  .debug_loc	00000000 .debug_loc
+00000000 l    d  .debug_frame	00000000 .debug_frame
+00000000 l    df *ABS*	00000000 /tmp/ccKiR8tQ.o
+00100084 l       .text	00000000 default_exc_handler
+00100088 l       .text	00000000 timer_handler
+0010008c l       .text	00000000 reset_handler
+001000f2 l       .text	00000000 zero_loop_end
+001000e8 l       .text	00000000 zero_loop
+001000f2 l       .text	00000000 main_entry
+00100106 l       .text	00000000 sleep_loop
+00000000 l    df *ABS*	00000000 qsort-demo.c
+00100218 l       .text	00000000 .SnowflakeIoT$30000$luihi$int_cmp
+0010021c l       .text	00000000 .SnowflakeIoT$30001$addilo$int_cmp
+001002e6 l       .text	00000000 .SnowflakeIoT$30002$luihi$cstring_cmp
+001002ea l       .text	00000000 .SnowflakeIoT$30003$addilo$cstring_cmp
+001003f0 l       .text	00000000 .SnowflakeIoT$30004$luihi$struct_cmp_by_price
+001003f4 l       .text	00000000 .SnowflakeIoT$30005$addilo$struct_cmp_by_price
+00100430 l       .text	00000000 .SnowflakeIoT$30006$luihi$struct_cmp_by_product
+00100434 l       .text	00000000 .SnowflakeIoT$30007$addilo$struct_cmp_by_product
+00000000 l    df *ABS*	00000000 libmin_printf.c
+00100472 l     F .text	000001e0 fmtint.constprop.0
+00100652 l     F .text	0000021e my_modf.isra.0
+00106294 l       .rodata	00000000 .SnowflakeIoT$20000$jtab$017
+001062d8 l       .rodata	00000000 .SnowflakeIoT$20001$jtab$084
+00000000 l    df *ABS*	00000000 libmin_success.c
+00000000 l    df *ABS*	00000000 libmin_ctype.c
+00000000 l    df *ABS*	00000000 libmin_strlen.c
+00000000 l    df *ABS*	00000000 libmin_memset.c
+00000000 l    df *ABS*	00000000 libmin_memcpy.c
+00000000 l    df *ABS*	00000000 libmin_qsort.c
+00101d7a l     F .text	0000013c sift
+00101eb6 l     F .text	00000216 trinkle
+00106428 l     O .rodata	00000020 debruijn32.0
+00000000 l    df *ABS*	00000000 libmin_strcmp.c
+00000000 l    df *ABS*	00000000 libmin_puts.c
+00000000 l    df *ABS*	00000000 libmin_putc.c
+00000000 l    df *ABS*	00000000 libtarg.c
+00106a48 l     O .bss	00000004 __heap_ptr
+00106a4c l     O .bss	00008000 __heap
+00000000 l    df *ABS*	00000000 adddf3.c
+00000000 l    df *ABS*	00000000 eqdf2.c
+00000000 l    df *ABS*	00000000 gedf2.c
+00000000 l    df *ABS*	00000000 ledf2.c
+00000000 l    df *ABS*	00000000 muldf3.c
+00000000 l    df *ABS*	00000000 subdf3.c
+00000000 l    df *ABS*	00000000 fixdfsi.c
+00000000 l    df *ABS*	00000000 floatsidf.c
+00000000 l    df *ABS*	00000000 fixdfdi.c
+00000000 l    df *ABS*	00000000 floatdidf.c
+00000000 l    df *ABS*	00000000 getf2.c
+00000000 l    df *ABS*	00000000 letf2.c
+00000000 l    df *ABS*	00000000 multf3.c
+00000000 l    df *ABS*	00000000 subtf3.c
+00000000 l    df *ABS*	00000000 fixtfdi.c
+00000000 l    df *ABS*	00000000 floatditf.c
+00000000 l    df *ABS*	00000000 mulsf3.c
+00000000 l    df *ABS*	00000000 subsf3.c
+00000000 l    df *ABS*	00000000 fixsfsi.c
+00000000 l    df *ABS*	00000000 extendsfdf2.c
+00000000 l    df *ABS*	00000000 extenddftf2.c
+00000000 l    df *ABS*	00000000 trunctfdf2.c
+00000000 l    df *ABS*	00000000 libgcc2.c
+00000000 l    df *ABS*	00000000 libgcc2.c
+00000000 l    df *ABS*	00000000 libgcc2.c
+00000000 l    df *ABS*	00000000 libgcc2.c
+00102396 g     F .text	00000022 .hidden libmin_puts
+00106120 g     F .text	0000002a .hidden __ashldi3
+00103992 g     F .text	000000f4 .hidden __getf2
+00102a92 g     F .text	0000006a .hidden __eqdf2
+00101b94 g     F .text	00000024 .hidden _isctype
+00103816 g     F .text	0000017c .hidden __floatdidf
+00100114 g     F .text	0000003e .hidden struct_cmp_by_price
+00105c74 g     F .text	00000060 .hidden __fixsfsi
+00102afc g     F .text	000000a6 .hidden __gtdf2
+001023d4 g     F .text	00000006 .hidden simple_get_mepc
+00008000 g       *ABS*	00000000 _stack_len
+00105942 g     F .text	00000332 .hidden __subsf3
+00101cea g     F .text	00000090 .hidden libmin_memcpy
+001023d0 g     F .text	00000004 .hidden memcpy
+0010028c g     F .text	0000008e .hidden sort_cstrings_example
+00103708 g     F .text	00000068 .hidden __floatsidf
+00102ba2 g     F .text	000000a6 .hidden __ltdf2
+00103a86 g     F .text	000000f4 .hidden __letf2
+00106a48 g       .bss	00000000 _bss_start
+00101b90 g     F .text	00000004 .hidden libmin_success
+0010010c g     F .text	00000008 .hidden int_cmp
+001023da g     F .text	00000006 .hidden simple_get_mcause
+00105cd4 g     F .text	00000096 .hidden __extendsfdf2
+00102488 g     F .text	0000060a .hidden __adddf3
+00105602 g     F .text	0000011e .hidden __floatditf
+0010245a g     F .text	0000002e .hidden libtarg_sbrk
+00132000 g       .stack	00000000 stack
+00100080 g       *ABS*	00000000 _entry_point
+0010ea4c g       .bss	00000000 _bss_end
+001023ba g     F .text	00000008 .hidden simple_putchar
+001036a4 g     F .text	00000064 .hidden __fixdfsi
+001001a0 g     F .text	000000ac .hidden sort_integers_example
+0010015e g     F .text	00000042 .hidden print_int_array
+001054ee g     F .text	00000114 .hidden __fixtfdi
+001060f6 g     F .text	0000002a .hidden __lshrdi3
+00102ba2 g     F .text	000000a6 .hidden __ledf2
+0010015a g     F .text	00000004 .hidden struct_cmp_by_product
+0010614a g     F .text	0000003c .hidden __clzsi2
+001023e6 g     F .text	0000003e .hidden simple_exc_handler
+001023b8 g     F .text	00000002 .hidden libmin_putc
+0010024c g     F .text	00000040 .hidden print_cstring_array
+00101bd4 g     F .text	00000116 .hidden libmin_memset
+001000d4 g       .text	00000000 _start
+0010031a g     F .text	00000056 .hidden print_struct_array
+00103a86 g     F .text	000000f4 .hidden __lttf2
+00105d6a g     F .text	00000150 .hidden __extenddftf2
+00100152 g     F .text	00000008 .hidden cstring_cmp
+00102c48 g     F .text	00000440 .hidden __muldf3
+00106844 g     O .data	00000202 .hidden _ctype
+001023cc g     F .text	00000004 .hidden memset
+00106186 g     F .text	0000001c .hidden main
+001023c2 g     F .text	0000000a .hidden simple_halt
+00102452 g     F .text	00000008 .hidden libtarg_putc
+00100370 g     F .text	00000102 .hidden sort_structs_example
+00100084 g       .vectors	00000000 _vectors_end
+00105720 g     F .text	00000222 .hidden __mulsf3
+00102372 g     F .text	00000024 .hidden libmin_strcmp
+00103b7a g     F .text	00000b0e .hidden __multf3
+00138000 g       .vectors	00000000 _stack_start
+00102a92 g     F .text	0000006a .hidden __nedf2
+001064fc g     O .rodata	00000100 .hidden __clz_tab
+00103770 g     F .text	000000a6 .hidden __fixdfdi
+00101bb8 g     F .text	0000001c .hidden libmin_strlen
+00103992 g     F .text	000000f4 .hidden __gttf2
+001020cc g     F .text	000002a6 .hidden libmin_qsort
+00106840 g     O .data	00000004 .hidden _pctype
+00002000 g       *ABS*	00000000 _min_stack
+00104688 g     F .text	00000e66 .hidden __subtf3
+00138010 g       *ABS*	00000000 fromhost
+00102424 g     F .text	0000001a .hidden simple_timer_handler
+00020008 g       *ABS*	00000000 tohost
+00102448 g     F .text	0000000a .hidden libtarg_fail
+0010243e g     F .text	0000000a .hidden libtarg_success
+001023e0 g     F .text	00000006 .hidden simple_get_mtval
+00102afc g     F .text	000000a6 .hidden __gedf2
+00132000 g       .stack	00000000 _stack
+00100000 g       .vectors	00000000 _vectors_start
+00100870 g     F .text	00001320 .hidden libmin_printf
+00103088 g     F .text	0000061c .hidden __subdf3
+00105eba g     F .text	0000023c .hidden __trunctfdf2
+
+

@@ -1,5 +1,5 @@
 
-./encrypted.elf:     file format elf32-littleriscv
+./indirect-test-enc-half.elf:     file format elf32-littleriscv
 
 
 Disassembly of section .text:
@@ -7227,9 +7227,9 @@ Disassembly of section .text:
   10521c:	001054b7          	lui	s1,0x105
   105220:	7304a783          	lw	a5,1840(s1) # 105730 <(null)>
   105224:	c422                	sw	s0,8(sp)
-  105226:	82169437          	lui	s0,0x82169
+  105226:	52169437          	lui	s0,0x52169
   10522a:	c606                	sw	ra,12(sp)
-  10522c:	96c40513          	addi	a0,s0,-1684 # 8216896c <(null)+0x8203095c>
+  10522c:	96c40513          	addi	a0,s0,-1684 # 5216896c <(null)+0x5203095c>
   105230:	9782                	jalr	a5
   105232:	7304a783          	lw	a5,1840(s1)
   105236:	96c40513          	addi	a0,s0,-1684

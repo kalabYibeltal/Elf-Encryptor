@@ -1,5 +1,6 @@
 
 indirect-test.elf:     file format elf32-littleriscv
+00100112
 
 Contents of section .data:
  105730 12011000 38000000 3e571000 00002000  ....8...>W.... .
